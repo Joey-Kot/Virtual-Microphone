@@ -1,0 +1,81 @@
+name: Build and publish Latest
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Configure RNNoise VST2 build
+        run: >-
+          cmake -S vendor/noise-suppression-for-voice -B build-rnnoise
+          -DBUILD_TESTS=OFF
+          -DBUILD_VST_PLUGIN=ON
+          -DBUILD_VST3_PLUGIN=OFF
+          -DBUILD_LV2_PLUGIN=OFF
+          -DBUILD_LADSPA_PLUGIN=OFF
+          -DBUILD_AU_PLUGIN=OFF
+          -DBUILD_AUV3_PLUGIN=OFF
+          -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build RNNoise mono VST2 plugin
+        run: cmake --build build-rnnoise --config Release --parallel
+
+      - name: Configure Virtual Microphone build
+        run: cmake -S . -B build-app -A x64
+
+      - name: Build Virtual Microphone
+        run: cmake --build build-app --config Release --parallel
+
+      - name: Assemble release files
+        shell: pwsh
+        run: |
+          $plugin = Get-ChildItem -Path build-rnnoise -Filter rnnoise_mono.dll -Recurse |
+            Select-Object -First 1
+          if ($null -eq $plugin) {
+            throw 'rnnoise_mono.dll was not produced by the VST2 build.'
+          }
+          $application = Get-ChildItem -Path build-app -Filter virtual-microphone.exe -Recurse |
+            Select-Object -First 1
+          if ($null -eq $application) {
+            throw 'virtual-microphone.exe was not produced by the application build.'
+          }
+          New-Item -ItemType Directory -Path dist -Force | Out-Null
+          Copy-Item $plugin.FullName dist/rnnoise_mono.dll
+          Copy-Item $application.FullName dist/virtual-microphone.exe
+          Copy-Item virtual-microphone.ini.example dist/virtual-microphone.ini.example
+          Copy-Item virtual-microphone-restart.ps1 dist/virtual-microphone-restart.ps1
+
+      - name: Move Latest tag to this build
+        shell: pwsh
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git tag --force Latest $env:GITHUB_SHA
+          git push origin refs/tags/Latest --force
+
+      - name: Create or overwrite Latest release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: Latest
+          name: Latest
+          target_commitish: ${{ github.sha }}
+          make_latest: true
+          generate_release_notes: true
+          files: |
+            dist/virtual-microphone.exe
+            dist/rnnoise_mono.dll
+            dist/virtual-microphone.ini.example
+            dist/virtual-microphone-restart.ps1
+          overwrite_files: true

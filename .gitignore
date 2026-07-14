@@ -1,0 +1,10 @@
+# CMake build trees and generated Windows binaries
+/build-*/
+/CMakeCache.txt
+/CMakeFiles/
+
+# Local configuration contains machine-specific endpoint IDs.
+/virtual-microphone.ini
+
+# Release assets are produced only by GitHub Actions.
+/dist/

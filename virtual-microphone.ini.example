@@ -1,0 +1,22 @@
+# Use `virtual-microphone.exe --list-devices` and paste the complete endpoint IDs here.
+# A unique, case-insensitive part of an endpoint name also works, but IDs remain stable
+# when more than one device has a similar name.
+input = Your physical microphone endpoint ID
+
+# This must be a *render/playback* endpoint. For VB-CABLE, use the device normally
+# named "CABLE Input". Applications then use "CABLE Output" as their microphone.
+output = CABLE Input
+
+# Positive values boost. +20 dB is ten times the sample amplitude.
+# The application applies hard limiting at full scale, so lower this value if speech clips.
+gain_db = 20
+
+# Optional: same-folder or absolute path to a VST2 RNNoise DLL. rnnoise_mono.dll
+# must be 64-bit and requires the virtual cable playback endpoint to use 48 kHz.
+vst_plugin = rnnoise_mono.dll
+
+# Parameters of werman/noise-suppression-for-voice. The listed values are the
+# plugin defaults. Raise vad_threshold only if it leaves unwanted speech/noise.
+vad_threshold = 0.6
+vad_grace_period = 20
+vad_retroactive_grace_period = 0
