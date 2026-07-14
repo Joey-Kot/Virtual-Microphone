@@ -15,6 +15,7 @@
 #include <cstdio>
 #include <cstring>
 #include <cwchar>
+#include <cwctype>
 #include <fstream>
 #include <iostream>
 #include <limits>
