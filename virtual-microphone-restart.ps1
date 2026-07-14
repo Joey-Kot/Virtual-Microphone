@@ -17,24 +17,26 @@ foreach ($requiredFile in @($file, $config, $rnnoise)) {
     }
 }
 
-function Restart-VirtualMicrophone {
-    $processes = Get-Process -Name 'virtual-microphone' -ErrorAction SilentlyContinue
-    if ($processes) {
-        $processes | Stop-Process -ErrorAction Stop
-        $processes | Wait-Process -Timeout 10 -ErrorAction SilentlyContinue
-    }
-
+function Start-VirtualMicrophone {
     $processPath = Join-Path -Path $workingDirectory -ChildPath $file
     $newProcess = Start-Process -WorkingDirectory $workingDirectory `
         -FilePath $processPath `
         -ArgumentList '--config virtual-microphone.ini' `
         -PassThru `
         -WindowStyle Hidden
-    Write-Host "virtual-microphone restarted (PID: $($newProcess.Id))"
+    Write-Host "virtual-microphone started (PID: $($newProcess.Id))"
 }
 
-if ($Restart) {
-    Restart-VirtualMicrophone
-} else {
-    Write-Host 'Use -Restart to stop any existing virtual-microphone process and start a new one.'
+$processes = Get-Process -Name 'virtual-microphone' -ErrorAction SilentlyContinue
+if ($processes) {
+    if (-not $Restart) {
+        $ids = $processes.Id -join ', '
+        Write-Host "virtual-microphone is already running (PID: $ids). Use -Restart to replace it."
+        exit 0
+    }
+
+    $processes | Stop-Process -ErrorAction Stop
+    $processes | Wait-Process -Timeout 10 -ErrorAction SilentlyContinue
 }
+
+Start-VirtualMicrophone

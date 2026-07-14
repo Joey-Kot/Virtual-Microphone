@@ -66,15 +66,21 @@ virtual-microphone.exe
 
 5. 在应用中将麦克风选为虚拟线路的录制端：VB-CABLE 中即 `CABLE Output`。如应用遵循 Windows 默认输入设备，也可以将它设为默认录制设备。
 
-## 手动重启
+## 启动与重启
 
 Release 包含 `virtual-microphone-restart.ps1`。将 `virtual-microphone.ini` 按实际设备填写后，在该目录运行：
 
 ```powershell
-.\virtual-microphone-restart.ps1 -Restart
+.\virtual-microphone-restart.ps1
 ```
 
-它会等待已有的 `virtual-microphone.exe` 退出，随后以同目录为工作目录启动新实例。脚本会在启动前检查 exe、配置文件和 RNNoise DLL 是否齐全。
+双击或直接运行脚本时，若没有 `virtual-microphone.exe` 实例，它会以同目录为工作目录启动一个新实例；若已有实例，则只提示其 PID，不会中断现有音频流。脚本会在启动前检查 exe、配置文件和 RNNoise DLL 是否齐全。
+
+如需停止当前实例并重启，使用：
+
+```powershell
+.\virtual-microphone-restart.ps1 -Restart
+```
 
 ## 第三方组件
 
