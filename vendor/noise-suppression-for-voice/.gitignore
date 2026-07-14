@@ -4,7 +4,8 @@ cmake-build-debug/
 cmake-build-release/
 CMakeFiles/
 
-*.cmake
+# CMake files are project source. Keeping them tracked is required for
+# reproducible downstream builds, including JUCE's module support files.
 CMakeCache.txt
 MakeFile
 *.cbp
