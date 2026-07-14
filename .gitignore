@@ -8,3 +8,5 @@
 
 # Release assets are produced only by GitHub Actions.
 /dist/
+/Virtual-Microphone-Latest.zip
+/Virtual-Microphone-Latest.zip.sha256

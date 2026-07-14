@@ -25,6 +25,8 @@ cmake --build build-windows
 
 生成文件为 `build-windows/virtual-microphone.exe`。
 
+GitHub Release 提供 `Virtual-Microphone-Latest.zip` 和同名 `.sha256` 校验文件。ZIP 包含程序、同源源码构建的 RNNoise VST2 DLL、示例配置和手动重启脚本。
+
 ## 配置与运行
 
 1. 在 Windows 安装一个虚拟音频线路驱动。例如 VB-CABLE 中，`CABLE Input` 是播放设备，`CABLE Output` 是录制设备。

@@ -56,6 +56,10 @@ jobs:
           Copy-Item $application.FullName dist/virtual-microphone.exe
           Copy-Item virtual-microphone.ini.example dist/virtual-microphone.ini.example
           Copy-Item virtual-microphone-restart.ps1 dist/virtual-microphone-restart.ps1
+          Compress-Archive -Path dist/* -DestinationPath Virtual-Microphone-Latest.zip -Force
+          $hash = (Get-FileHash -Path Virtual-Microphone-Latest.zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  Virtual-Microphone-Latest.zip" |
+            Set-Content -Path Virtual-Microphone-Latest.zip.sha256 -Encoding ascii -NoNewline
 
       - name: Move Latest tag to this build
         shell: pwsh
@@ -64,6 +68,25 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git tag --force Latest $env:GITHUB_SHA
           git push origin refs/tags/Latest --force
+
+      - name: Remove legacy single-file release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          $assets = gh release view Latest --json assets --jq '.assets[].name'
+          if ($LASTEXITCODE -eq 0) {
+            foreach ($asset in @(
+              'virtual-microphone.exe',
+              'rnnoise_mono.dll',
+              'virtual-microphone.ini.example',
+              'virtual-microphone-restart.ps1'
+            )) {
+              if ($assets -contains $asset) {
+                gh release delete-asset Latest $asset --yes
+              }
+            }
+          }
 
       - name: Create or overwrite Latest release
         uses: softprops/action-gh-release@v2
@@ -74,8 +97,6 @@ jobs:
           make_latest: true
           generate_release_notes: true
           files: |
-            dist/virtual-microphone.exe
-            dist/rnnoise_mono.dll
-            dist/virtual-microphone.ini.example
-            dist/virtual-microphone-restart.ps1
+            Virtual-Microphone-Latest.zip
+            Virtual-Microphone-Latest.zip.sha256
           overwrite_files: true
