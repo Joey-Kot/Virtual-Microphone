@@ -17,6 +17,24 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v4
 
+      - name: Check license notices
+        shell: pwsh
+        run: |
+          foreach ($file in @(
+            'NOTICE',
+            'THIRD_PARTY_NOTICES.md',
+            'THIRD_PARTY_LICENSES/noise-suppression-for-voice-GPL-3.0-or-later.txt',
+            'THIRD_PARTY_LICENSES/RNNoise-BSD-3-Clause.txt',
+            'THIRD_PARTY_LICENSES/FST-GPL-3.0-or-later.txt',
+            'THIRD_PARTY_LICENSES/JUCE-GPL-3.0-or-later.txt'
+          )) {
+            if (-not (Test-Path $file -PathType Leaf)) {
+              throw "Missing required license file: $file"
+            }
+          }
+          Select-String -Path THIRD_PARTY_NOTICES.md -Pattern 'noise-suppression-for-voice', 'RNNoise', 'FST', 'JUCE' |
+            Out-Null
+
       - name: Configure RNNoise VST2 build
         run: >-
           cmake -S vendor/noise-suppression-for-voice -B build-rnnoise
@@ -56,6 +74,8 @@ jobs:
           Copy-Item $application.FullName dist/virtual-microphone.exe
           Copy-Item virtual-microphone.ini.example dist/virtual-microphone.ini.example
           Copy-Item virtual-microphone-restart.ps1 dist/virtual-microphone-restart.ps1
+          Copy-Item README.md, LICENSE, NOTICE, THIRD_PARTY_NOTICES.md dist/
+          Copy-Item THIRD_PARTY_LICENSES dist/THIRD_PARTY_LICENSES -Recurse
           Compress-Archive -Path dist/* -DestinationPath Virtual-Microphone-Latest.zip -Force
           $hash = (Get-FileHash -Path Virtual-Microphone-Latest.zip -Algorithm SHA256).Hash.ToLowerInvariant()
           "$hash  Virtual-Microphone-Latest.zip" |
